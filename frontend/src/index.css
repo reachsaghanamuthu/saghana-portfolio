@@ -1,0 +1,537 @@
+@import url('https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Playfair+Display:ital,wght@0,400..900;1,400..700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
+
+@theme {
+  /*
+   * Light / paper surfaces — a light neutral grey stock.
+   *
+   * Every surface on the site derives from this, including the type that is
+   * knocked out of the dark bands (`text-newsprint`), so the reversed letters
+   * keep matching the page exactly without a second value to update.
+   */
+  --color-newsprint: #EAEAE8;
+  --color-newsprint-deep: #D9D9D6;
+
+  /*
+   * Ink — three tones, and only three.
+   *
+   * This had drifted to five near-blacks (#1C1710, #241E16, #29231A,
+   * #2A2418, #17130D) doing indistinguishable jobs. One tone for solid
+   * surfaces, one for everything you read, one for anything secondary.
+   */
+  --color-ink-900: #17130D; /* bands, footer, filled buttons, rules */
+  --color-ink-700: #26211A; /* body copy, headings, links */
+  --color-ink-400: #6A5D52; /* kickers, meta, captions — the paper accent */
+
+  /*
+   * Accents, split by surface luminance. Gold cannot carry text on the paper
+   * (1.8:1 against it), so it is reserved for dark surfaces only — the
+   * footer and the controls over the video. Walnut is the paper accent, and
+   * is now the same value as ink-400.
+   */
+  --color-signal: #E4B94C;
+  --color-walnut: #6A5D52;
+
+  /*
+   * Type scale — seven steps on a ~1.28 ratio.
+   *
+   * Twenty distinct sizes were in use, eleven of them inside a 3.4px band,
+   * which is below the threshold anyone can perceive as a distinction. These
+   * are the only sizes the site sets.
+   */
+  --text-h1: clamp(2.35rem, 3.9vw, 3.5rem);
+  --text-h2: clamp(1.85rem, 3.05vw, 2.75rem);
+  --text-h3: clamp(1.3rem, 1.95vw, 1.75rem);
+  --text-h4: clamp(1rem, 1.18vw, 1.08rem);
+  --text-body: clamp(0.84rem, 0.94vw, 0.9rem);
+  --text-label: clamp(0.7rem, 0.78vw, 0.76rem);
+  --text-micro: clamp(0.66rem, 0.72vw, 0.7rem);
+
+  /*
+   * The nameplate sits outside the scale above, and deliberately so: it is set
+   * in blackletter, which needs a size or two more than a Didone to read at
+   * the same optical weight, and it is the only element on the page set in
+   * that face. Declared here rather than inline at the two call sites, which
+   * had drifted to unrelated formulas for the same piece of type.
+   */
+  --text-nameplate: clamp(2rem, 4vw, 3.3rem); /* masthead */
+  --text-nameplate-sm: clamp(1.5rem, 2.6vw, 2.2rem); /* colophon */
+
+  /*
+   * Spacing — an 8px scale.
+   *
+   * 39 distinct values were in use and 30 of them missed an 8px grid, mostly
+   * because separate clamp() formulas resolve to arbitrary fractions at any
+   * given width. Fixed steps, stepped at breakpoints where fluidity is
+   * actually wanted, land on the grid at every size instead.
+   */
+  --space-1: 0.25rem; /*  4 */
+  --space-2: 0.5rem; /*  8 */
+  --space-3: 0.75rem; /* 12 */
+  --space-4: 1rem; /* 16 */
+  --space-5: 1.5rem; /* 24 */
+  --space-6: 2rem; /* 32 */
+  --space-7: 2.5rem; /* 40 */
+  --space-8: 3rem; /* 48 */
+  --space-9: 4rem; /* 64 */
+
+  /* Section rhythm. Stepped rather than fluid so it lands on the grid at
+     every width instead of resolving to 51.8px and similar. */
+  --space-section: 2.5rem; /* 40 */
+
+  /* Column gutter — five different clamp() formulas were doing this one job,
+     each resolving to its own fraction (40.3, 41.6, 43.2, 50.4). */
+  --gutter-col: 1.5rem; /* 24 */
+
+  /*
+   * Four voices, the way a broadsheet is actually set:
+   *
+   *   nameplate — blackletter, and only ever the paper's name.
+   *   masthead  — a Didone for headlines: high stroke contrast, tight fit.
+   *   serif     — the text face. All running copy is set in this.
+   *   mono      — small uppercase furniture only: kickers, dates, nav.
+   *
+   * Body copy used to be monospaced, which read as a code listing rather
+   * than as a newspaper; moving it to a proper text serif is most of what
+   * makes the page look printed.
+   */
+  --font-nameplate: "UnifrakturMaguntia", "Playfair Display", ui-serif, serif;
+  --font-masthead: "Playfair Display", ui-serif, Georgia, serif;
+
+  /*
+   * Two faces carry the whole site: Playfair for headings, Plex Mono for
+   * everything else. There is deliberately no `--font-serif` — Times was
+   * still reaching figure captions long after body copy had moved to mono,
+   * so captions were the only place a third face appeared, which read as an
+   * accident rather than a choice.
+   */
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+
+  /* The two hero bands. Named rather than inlined so the pair can be swapped
+     or re-tuned in one place — they only work as a matched set. */
+  --color-band-ink: #17130D;
+
+  /* Bulletin type: a light grey on the ink band, quiet enough to sit under
+     the masthead. Set as flat values rather than an opacity modifier so the
+     painted colour is exactly this and not a blend resolved in oklab. */
+  --color-ticker: #AAAAA8;
+  --color-ticker-dim: #5C5C59;
+
+  /* Rule weights. Newsprint rules are printed ink, not hairline UI dividers,
+     so they sit far darker than a typical web border. */
+  --rule-ink: #2A2418;
+  --rule-strong: rgba(42, 36, 24, 0.78);
+  --rule-mid: rgba(42, 36, 24, 0.55);
+
+  /*
+   * ---------- The diary ----------
+   *
+   * The book is a separate object resting on the sheet, not part of it, so it
+   * keeps a warmer palette than the page — that much was deliberate. What was
+   * not deliberate is that the palette lived as raw hex in four files and the
+   * type ran to eleven ad-hoc sizes, four of them inside a single pixel of
+   * each other. Same drift the page scale above was built to end, quarantined
+   * inside the covers. Declared here instead.
+   */
+  --color-diary-ink: #241E16; /* leaf titles, entries, the lead quote */
+  --color-diary-soft: #4A4136; /* secondary quotes, the monogram */
+  --color-diary-accent: #6A5D52; /* eyebrows, notes, folios, rules */
+
+  /*
+   * Five steps, and only five. The book is 520px across at most, so it does
+   * need to set smaller than the page — but it needs a scale to do it on,
+   * not eleven values chosen one at a time. Fixed rather than fluid: the
+   * leaf is a fixed-size object, so type that reflowed with the viewport
+   * would drift out of the layout it is set into.
+   */
+  --text-diary-display: 1.55rem; /* leaf titles */
+  --text-diary-quote: 0.9rem; /* the lead creed line */
+  --text-diary-body: 0.78rem; /* entries, secondary creed lines */
+  --text-diary-note: 0.68rem; /* italic standfirsts */
+  --text-diary-micro: 0.6rem; /* eyebrows, folios, captions, imprint */
+
+  /* Blackletter on the boards, sized like the nameplate rather than off the
+     scale above — same face, same reasoning. */
+  --text-diary-cover: 2rem;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-newsprint);
+    scroll-behavior: smooth;
+    /* Anchored sections land below the sticky masthead rather than under it. */
+    scroll-padding-top: 6.5rem;
+  }
+
+  body {
+    color: var(--color-ink-700);
+    background-color: var(--color-newsprint);
+    font-family: var(--font-mono);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: rgba(228, 185, 76, 0.45);
+  }
+
+  /* Keyboard focus stays visible everywhere, in the paper's own accent. */
+  :focus-visible {
+    outline: 2px solid var(--color-walnut);
+    outline-offset: 3px;
+  }
+
+  /*
+   * One interaction timing for the whole site. Every hover was previously a
+   * bare `transition-colors` at the browser default of 150ms while the one
+   * button ran at 180ms — close enough to look like a bug rather than a
+   * choice. Declared here so no call site has to remember it.
+   */
+  a,
+  button,
+  input,
+  textarea {
+    transition:
+      color 180ms ease,
+      background-color 180ms ease,
+      border-color 180ms ease,
+      opacity 180ms ease;
+  }
+
+  /* Pressed feedback — there was none anywhere before. */
+  a:active,
+  button:active {
+    opacity: 0.7;
+  }
+}
+
+/* ---------- Layout shell ----------
+   One measure for the whole site, so every section's left edge lines up
+   the way a newspaper's columns do. */
+/*
+ * The page measure.
+ *
+ * 71% is taken from the reference layout — measured off it, the content
+ * column occupies just under three quarters of the window with the rest
+ * standing as margin. That empty space either side is the look; widening
+ * the column to use it is what made earlier passes read as a web app.
+ *
+ * Percentages are of the padded page rather than the viewport, so the 20px
+ * outer gutter is subtracted first. Against `vw` the shell would overrun
+ * the gutter on narrow phones.
+ */
+.shell {
+  width: min(1370px, 71%);
+  margin-inline: auto;
+}
+
+/* Below tablet the margin becomes a luxury there is no room for. */
+@media (max-width: 860px) {
+  .shell {
+    width: 92%;
+  }
+}
+
+/*
+ * The page sits inset from the window on both sides, so the full-bleed bands
+ * — the bulletin and the colophon — stop short of the edges and read as
+ * printed on the sheet rather than as browser furniture.
+ */
+.page-gutter {
+  padding-inline: 20px;
+}
+
+/* ---------- Newsprint surface ----------
+   Layered radial washes stand in for paper mottling, plus a fine
+   fibre grain. Cheaper than an image and it scales to any viewport. */
+/* Neutral-grey mottling. The washes were warm brown when the stock was cream;
+   left as they were they tinted the grey straight back to tan. */
+.newsprint {
+  background-color: var(--color-newsprint);
+  background-image:
+    radial-gradient(ellipse at 18% 8%, rgba(126, 126, 122, 0.13), transparent 55%),
+    radial-gradient(ellipse at 82% 62%, rgba(112, 112, 108, 0.11), transparent 58%),
+    radial-gradient(ellipse at 50% 40%, rgba(253, 253, 251, 0.45), transparent 72%),
+    repeating-linear-gradient(
+      92deg,
+      rgba(104, 104, 100, 0.03) 0px,
+      rgba(104, 104, 100, 0.03) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  background-attachment: fixed;
+}
+
+/* ---------- Editorial furniture ---------- */
+.rule-heavy {
+  border-top: 3px solid var(--rule-ink);
+  border-bottom: 1px solid var(--rule-ink);
+  height: 5px;
+}
+
+/* The rule that opens each section. Printed ink, not a UI divider. */
+.rule-hair {
+  border-top: 1px solid var(--rule-strong);
+}
+
+/*
+ * The typographic classes live in `components` so a Tailwind utility can
+ * still override them at the call site.
+ *
+ * Unlayered rules beat layered ones in the cascade no matter the source
+ * order, so while these sat outside a layer they silently won every conflict
+ * — `text-newsprint` on a `.kicker` was being discarded, and so was every
+ * `text-[...]` size set alongside `.copy`.
+ */
+@layer components {
+  /* The small mono label that sits above every headline. */
+  .kicker {
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--color-ink-400);
+  }
+
+  /* ---- Headings. One definition per level, used everywhere. ---- */
+  .display {
+    font-family: var(--font-masthead);
+    font-weight: 800;
+    line-height: 1.04;
+    letter-spacing: -0.02em;
+    color: var(--color-ink-700);
+  }
+
+  /* The byline. Sized above every section heading — it was 41px against
+     their 48px, which put the page's most important line at the bottom of
+     the hierarchy. */
+  .h1 {
+    font-size: var(--text-h1);
+  }
+  .h2 {
+    font-size: var(--text-h2);
+  }
+  .h3 {
+    font-size: var(--text-h3);
+    line-height: 1.12;
+  }
+
+  /*
+   * Sub-headings inside cards. Mono rather than Playfair because they label
+   * a list rather than open a section — but at a single size, where there
+   * were previously four different treatments all tagged h3, one of them
+   * smaller than the body copy beneath it.
+   */
+  .h4 {
+    font-family: var(--font-mono);
+    font-size: var(--text-h4);
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: 0.01em;
+    color: var(--color-ink-900);
+  }
+
+  /* Body copy — monospace, set loose, as the reference layout sets it. No
+     hyphenation: mono's even colour makes a ragged edge read as deliberate,
+     and hyphens in a fixed-pitch face look like typos. */
+  .copy {
+    font-family: var(--font-mono);
+    font-size: var(--text-body);
+    line-height: 1.62;
+    color: var(--color-ink-700);
+  }
+
+  .copy p + p {
+    margin-top: 1em;
+  }
+
+  /* Secondary/meta line: dates, locations, issuer names, captions. */
+  .meta {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    line-height: 1.5;
+    color: var(--color-ink-400);
+  }
+
+  /*
+   * The one inline link treatment. Its markup was duplicated across four
+   * files with the tracking drifting between 0.08em and 0.1em; the vertical
+   * padding brings the tap target to 44px without changing the line box,
+   * since padding on an inline box does not affect layout height.
+   */
+  .news-link {
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    letter-spacing: 0.08em;
+    color: var(--color-ink-700);
+    text-decoration: underline;
+    text-decoration-color: rgba(106, 93, 82, 0.5);
+    text-underline-offset: 5px;
+    padding-block: 0.85rem;
+  }
+
+  .news-link:hover {
+    color: var(--color-ink-400);
+    text-decoration-color: var(--color-ink-400);
+  }
+}
+
+/*
+ * Body copy holds its size on phones instead of shrinking with the viewport.
+ * The fluid rule bottomed out at 12.5px on a 390px screen, well under a
+ * comfortable reading size for a hand-held.
+ */
+@media (max-width: 860px) {
+  :root {
+    --text-body: 0.95rem;
+    --text-label: 0.8rem;
+    --text-micro: 0.72rem;
+  }
+}
+
+@media (min-width: 768px) {
+  :root {
+    --space-section: 3rem; /* 48 */
+    --gutter-col: 2rem; /* 32 */
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --space-section: 3.5rem; /* 56 */
+    --gutter-col: 3rem; /* 48 */
+  }
+}
+
+/*
+ * The diary's paper. Deliberately warmer and darker than the page's grey
+ * newsprint: the book is a separate object resting on the sheet, and giving
+ * it the same surface made it dissolve into the section behind it.
+ */
+.diary-page {
+  background-color: #E4DCC8;
+  background-image:
+    radial-gradient(ellipse at 50% 0%, rgba(255, 252, 240, 0.5), transparent 60%),
+    radial-gradient(ellipse at 20% 90%, rgba(150, 130, 95, 0.16), transparent 55%),
+    repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 23px,
+      rgba(106, 93, 82, 0.14) 23px,
+      rgba(106, 93, 82, 0.14) 24px
+    );
+  box-shadow:
+    inset 0 0 36px rgba(84, 70, 48, 0.22),
+    inset 0 2px 0 rgba(255, 250, 236, 0.45);
+}
+
+/*
+ * A photograph with no edge. The mask fades the picture out before it reaches
+ * its own bounding box, so it reads as printed into the diary's paper rather
+ * than as a framed plate laid on top of it.
+ */
+.photo-blend {
+  -webkit-mask-image: radial-gradient(
+    ellipse at 50% 45%,
+    #000 52%,
+    rgba(0, 0, 0, 0.55) 74%,
+    transparent 92%
+  );
+  mask-image: radial-gradient(
+    ellipse at 50% 45%,
+    #000 52%,
+    rgba(0, 0, 0, 0.55) 74%,
+    transparent 92%
+  );
+}
+
+/* ---------- Photography ----------
+   Vintage frame: dark keyline, aged inner shadow. */
+.aged-frame {
+  border: 1px solid rgba(42, 36, 24, 0.85);
+  box-shadow:
+    inset 0 0 0 5px rgba(232, 226, 212, 0.55),
+    inset 0 0 26px rgba(60, 50, 35, 0.4),
+    0 2px 12px rgba(0, 0, 0, 0.18);
+}
+
+/*
+ * The house treatment for every photograph on the site.
+ *
+ * Drop any raw screenshot in and it lands in the paper's palette without
+ * per-image editing — grayscale first to kill competing hues, then a sepia
+ * wash back toward warm newsprint.
+ */
+.archive-photo {
+  filter: grayscale(85%) sepia(25%) contrast(1.1) brightness(0.95);
+}
+
+/* ---------- Ticker ----------
+   The standing bulletin under the masthead. Two identical tracks run
+   back to back so the loop has no visible seam. */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 42s linear infinite;
+}
+
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* ---------- Forms ---------- */
+.field {
+  width: 100%;
+  min-height: 44px;
+  background: transparent;
+  border-bottom: 1px solid var(--rule-mid);
+  padding: var(--space-3) 0.1rem;
+  font-family: var(--font-mono);
+  font-size: var(--text-body);
+  color: var(--color-ink-700);
+  transition: border-color 180ms ease;
+}
+
+.field::placeholder {
+  color: rgba(106, 93, 82, 0.6);
+}
+
+.field:focus {
+  outline: none;
+  border-bottom-color: var(--rule-ink);
+}
+
+.btn-ink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background-color: var(--color-ink-900);
+  color: var(--color-newsprint);
+  font-family: var(--font-mono);
+  font-size: var(--text-label);
+  letter-spacing: 0.12em;
+  min-height: 44px;
+  padding: var(--space-3) var(--space-5);
+  border: 1px solid var(--color-ink-900);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+.btn-ink:hover {
+  background-color: transparent;
+  color: var(--color-ink-900);
+}
+
+.btn-ink:active {
+  transform: translateY(1px);
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .ticker-track {
+    animation: none;
+  }
+}
